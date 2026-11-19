@@ -17,7 +17,7 @@ h1,h2,button,.f{font-family:"Baloo 2","Trebuchet MS",sans-serif}
 h2{font-size:clamp(1.8rem,6vw,2.6rem);margin:0 0 .2em;line-height:1.1}
 .en{display:block;font:400 .7em/1.3 "Atkinson Hyperlegible",system-ui,sans-serif;color:var(--soft);margin-top:.15em}
 .en.i{display:inline;margin:0}
-.hide-en .en{display:none}
+.hide-en .en,.lang-en .en,.lang-en #tgl{display:none}
 :focus-visible{outline:4px solid var(--red);outline-offset:3px}
 .scr{display:none;max-width:44rem;margin:0 auto;padding:.5rem 1rem 2rem}
 .scr.on{display:block}
@@ -96,7 +96,7 @@ button:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--in
   <div class="tiles" aria-hidden="true"><span class="tile">अ</span><span class="tile">आ</span><span class="tile">इ</span><span class="tile">ई</span><span class="tile">उ</span></div>
   <h1 class="logo">पढ़ो<br>बढ़ो!</h1>
   <div class="tag">हर दिन थोड़ा पढ़ना सीखो!<span class="en">Learn to read a little every day!</span></div>
-  <div class="lang" role="group" aria-label="Language"><button id="lhi" type="button" aria-pressed="true">हिंदी</button><button id="len" type="button" aria-pressed="false">English</button></div>
+  <div class="lang" role="group" aria-label="Language"><button id="lhi" type="button" aria-pressed="true">हिंदी</button><button id="len" type="button" aria-pressed="false">English</button><button id="ltl" type="button" aria-pressed="false">Filipino</button></div>
   <button id="play" class="play" type="button">▶ खेलो<span class="en i"> (PLAY)</span></button>
   <div class="stat">⭐ <span id="tot">0</span>/75</div>
   <button id="gbtn" class="jbtn" type="button">🎮 खेल<span class="en i"> (Games)</span></button> <button id="jokebtn" class="jbtn" type="button">😂 चुटकुला!<span class="en i"> (Joke!)</span></button>
@@ -149,16 +149,16 @@ button:active:not(:disabled){transform:translateY(4px);box-shadow:0 0 0 var(--in
 
 <script>
 const $=id=>document.getElementById(id),pick=a=>a[Math.floor(Math.random()*a.length)],sh=a=>[...a].sort(()=>Math.random()-.5);
-function speak(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=LANG==="en"?"en-IN":"hi-IN";u.rate=.7;const f=speechSynthesis.getVoices().find(x=>new RegExp("^"+(LANG==="en"?"en":"hi"),"i").test(x.lang));if(f)u.voice=f;speechSynthesis.speak(u)}catch(e){}}
-function load(){try{const s=JSON.parse(localStorage.getItem("basa"+(LANG==="en"?"-en":""))||"null");if(Array.isArray(s)&&s.length===25)return s}catch(e){}return Array(25).fill(0)}
-function save(){try{localStorage.setItem("basa"+(LANG==="en"?"-en":""),JSON.stringify(prog))}catch(e){}}
-let LANG=(()=>{try{return localStorage.getItem("basa-lang")==="en"?"en":"hi"}catch(e){return"hi"}})();
+function speak(t){try{if(!window.speechSynthesis)return;speechSynthesis.cancel();const u=new SpeechSynthesisUtterance(t);u.lang=({hi:"hi-IN",en:"en-IN",tl:"fil-PH"})[LANG];u.rate=.7;const f=speechSynthesis.getVoices().find(x=>new RegExp("^("+({hi:"hi",en:"en",tl:"fil|tl"})[LANG]+")","i").test(x.lang));if(f)u.voice=f;speechSynthesis.speak(u)}catch(e){}}
+function load(){try{const s=JSON.parse(localStorage.getItem("basa"+({hi:"",en:"-en",tl:"-tl"})[LANG])||"null");if(Array.isArray(s)&&s.length===25)return s}catch(e){}return Array(25).fill(0)}
+function save(){try{localStorage.setItem("basa"+({hi:"",en:"-en",tl:"-tl"})[LANG],JSON.stringify(prog))}catch(e){}}
+let LANG=(()=>{try{return ["en","tl"].includes(localStorage.getItem("basa-lang"))?localStorage.getItem("basa-lang"):"hi"}catch(e){return"hi"}})();
 let prog=load();
 $("tgl").onclick=()=>{const h=document.body.classList.toggle("hide-en");$("tgl").textContent=h?"Show English":"Hide English"};
 function show(id){document.querySelectorAll(".scr").forEach(s=>s.classList.toggle("on",s.id===id));$("back").style.visibility=id==="home"?"hidden":"visible";$("back").dataset.to=({lv:"home",gm:"home",gp:"gm"})[id]||"lv";if(id!=="gp"&&typeof gend==="function"){gend();gend=null};window.scrollTo(0,0)}
 $("back").onclick=()=>{if($("back").dataset.to==="lv")grid();show($("back").dataset.to)};
 $("play").onclick=()=>{grid();show("lv")};
-$("reset").onclick=()=>{if(confirm("सब फिर से शुरू करें? (Reset everything?)")){prog=Array(25).fill(0);save();grid()}};
+$("reset").onclick=()=>{if(confirm((LANG==="tl"?"I-reset ang lahat?":"सब फिर से शुरू करें?")+" (Reset everything?)")){prog=Array(25).fill(0);save();grid()}};
 const total=()=>prog.reduce((a,b)=>a+b,0);
 function grid(){$("tot").textContent=$("tot2").textContent=total();const g=$("grid");g.innerHTML="";
 prog.forEach((s,i)=>{const b=document.createElement("button");b.type="button";const open=i===0||prog[i-1]>0;
@@ -231,7 +231,7 @@ const OLD_JK=[
 ["Bakit laging nakangiti ang kalendaryo?","Why is the calendar always smiling?","Kasi marami siyang date! 😄","Because it has so many dates! 😄"],
 ["Ano ang paboritong titik ng pirata? 🏴‍☠️","What is a pirate's favorite letter?","Akala mo R, pero C — kasi mahal niya ang sea!","You think R, but it's C, because he loves the sea!"]];
 let ji=-1,cj=null;
-function joke(){let n;do{n=Math.floor(Math.random()*JK.length)}while(n===ji);ji=n;cj=JK[n];
+function joke(){let n;do{n=Math.floor(Math.random()*JK.length)}while(n===ji);ji=n;cj=(LANG==="tl"?JKT:LANG==="en"?JKE:JK)[n];
  $("jq").innerHTML=cj[0]+'<span class="en">'+cj[1]+'</span>';$("ja").innerHTML="";$("jshow").style.display="";$("jk").hidden=false;$("jshow").focus()}
 function closeJ(){$("jk").hidden=true}
 $("jshow").onclick=()=>{$("ja").innerHTML=cj[2]+' 🤣<span class="en">'+cj[3]+'</span>';$("jshow").style.display="none";$("jmore").focus()};
@@ -241,7 +241,7 @@ document.addEventListener("keydown",e=>{if(e.key==="Escape")closeJ()});
 let W,SW,MT,CS;
 const WE=[["🏠","house","घर",["hou","se"]],["🐟","fish","मछली",["fi","sh"]],["🌙","moon","चाँद",["mo","on"]],["🍚","rice","चावल",["ri","ce"]],["🐱","cat","बिल्ली",["ca","t"]],["🐶","dog","कुत्ता",["do","g"]],["🌳","tree","पेड़",["tr","ee"]],["☀️","sun","सूरज",["su","n"]],["🥭","mango","आम",["man","go"]],["🍌","banana","केला",["ba","nana"]],["⚽","ball","गेंद",["ba","ll"]],["📖","book","किताब",["bo","ok"]]];
 const SWE="a e i o u".split(" "),CSE="b d k l m n p s t".split(" ");
-function setLang(l){LANG=l;try{localStorage.setItem("basa-lang",l)}catch(e){}prog=load();const en=l==="en";W=en?WE.concat(WE2):WH.concat(WH2);buildCur(en);SW=en?SWE:SWH;MT=en?SWE:MTH;CS=en?CSE:CSH;$("lhi").setAttribute("aria-pressed",String(!en));$("len").setAttribute("aria-pressed",String(en));grid()}
+function OLD_setLang(l){LANG=l;try{localStorage.setItem("basa-lang",l)}catch(e){}prog=load();const en=l==="en";W=en?WE.concat(WE2):WH.concat(WH2);buildCur(en);SW=en?SWE:SWH;MT=en?SWE:MTH;CS=en?CSE:CSH;$("lhi").setAttribute("aria-pressed",String(!en));$("len").setAttribute("aria-pressed",String(en));grid()}
 $("lhi").onclick=()=>setLang("hi");$("len").onclick=()=>setLang("en");
 const WE2=[["🍎","apple","सेब",["ap","ple"]],["🐦","bird","पक्षी",["bi","rd"]],["🐄","cow","गाय",["co","w"]],["🚌","bus","बस",["bu","s"]],["🚗","car","कार",["ca","r"]],["🥚","egg","अंडा",["eg","g"]],["🥛","milk","दूध",["mi","lk"]],["⭐","star","तारा",["st","ar"]],["✋","hand","हाथ",["ha","nd"]],["🎩","hat","टोपी",["ha","t"]],["🎒","bag","बैग",["ba","g"]],["🌸","flower","फूल",["flo","wer"]],["⛵","boat","नाव",["boa","t"]],["⏰","clock","घड़ी",["clo","ck"]],["🐘","elephant","हाथी",["ele","phant"]],["🐸","frog","मेंढक",["fr","og"]]];
 const WH2=[["🐄","गाय","cow",["गा","य"]],["🚌","बस","bus",["ब","स"]],["🥚","अंडा","egg",["अं","डा"]],["🌸","फूल","flower",["फू","ल"]],["⭐","तारा","star",["ता","रा"]],["🍎","सेब","apple",["से","ब"]],["🐘","हाथी","elephant",["हा","थी"]],["⏰","घड़ी","clock",["घ","ड़ी"]]];
@@ -281,8 +281,8 @@ $("gbtn").onclick=()=>show("gm");
 const IH=[["अ","🐍","अजगर","python"],["आ","🥭","आम","mango"],["इ","🏢","इमारत","building"],["ई","🌙","ईद","Eid"],["उ","🦉","उल्लू","owl"],["ऊ","🧦","ऊन","wool"],["ए","1️⃣","एक","one"],["ओ","💧","ओस","dew"],["क","🕊️","कबूतर","pigeon"],["ख","🐰","खरगोश","rabbit"],["ग","🐄","गाय","cow"],["घ","🏠","घर","house"],["च","🥄","चम्मच","spoon"],["ज","🚢","जहाज़","ship"],["ट","🍅","टमाटर","tomato"],["त","⭐","तारा","star"],["द","🚪","दरवाज़ा","door"],["न","🚰","नल","tap"],["प","🌳","पेड़","tree"],["ब","🦆","बतख","duck"],["म","🐟","मछली","fish"],["र","🚆","रेल","train"],["स","🍎","सेब","apple"],["ह","🐘","हाथी","elephant"]];
 const IE=[["a","🍎","apple","सेब"],["b","⚽","ball","गेंद"],["c","🐱","cat","बिल्ली"],["d","🐶","dog","कुत्ता"],["e","🥚","egg","अंडा"],["f","🐟","fish","मछली"],["g","🐐","goat","बकरी"],["h","🏠","house","घर"],["i","🧊","ice","बर्फ"],["j","🚙","jeep","जीप"],["k","🤴","king","राजा"],["l","🦁","lion","शेर"],["m","🥭","mango","आम"],["n","👃","nose","नाक"],["o","🍊","orange","संतरा"],["p","🖊️","pen","कलम"],["q","👸","queen","रानी"],["r","🌈","rainbow","इंद्रधनुष"],["s","☀️","sun","सूरज"],["t","🌳","tree","पेड़"],["u","☂️","umbrella","छाता"],["v","🎻","violin","वायलिन"],["w","💧","water","पानी"],["x","📦","box","डिब्बा"],["y","🟡","yellow","पीला"],["z","🦓","zebra","ज़ेब्रा"]];
 let IT=[],GR=[],MS=[],LC=[],wr=0;
-const Z=y=>LANG==="en"?y.toUpperCase()+y:y;
-function buildCur(en){IT=en?IE:IH;GR=[];for(let i=0;i<IT.length;i+=3)GR.push(IT.slice(i,i+3));MS=en?SWE:MTH;LC=en?["b","m","s","t"]:["क","म","स","र"];const G=GR.length;$("tiers").innerHTML="1–3 सुनो (listening) · 4–"+(G+3)+" अक्षर (letters) · "+(G+4)+"–"+(G+11)+" आवाज़ें (sounds) · "+(G+12)+"–25 शब्द (words)"}
+const Z=y=>LANG!=="hi"?y.toUpperCase()+y:y;
+function buildCur(l){const en=l==="en";IT=l==="tl"?IL:en?IE:IH;GR=[];for(let i=0;i<IT.length;i+=3)GR.push(IT.slice(i,i+3));MS=l==="hi"?MTH:SWE;LC=l==="hi"?["क","म","स","र"]:["b","m","s","t"];const G=GR.length;$("tiers").innerHTML="1–3 सुनो (listening) · 4–"+(G+3)+" अक्षर (letters) · "+(G+4)+"–"+(G+11)+" आवाज़ें (sounds) · "+(G+12)+"–25 शब्द (words)"}
 function lvl(i){if(i<3)return{k:"P",g:[0,1,2].map(x=>W[(i*3+x)%W.length])};i-=3;const G=GR.length;if(i<G)return{k:"L",g:GR[i],seen:IT.slice(0,(i+1)*3)};const j=i-G;if(j<8)return{k:"Y",m:MS[j],rv:j>=MS.length};const s=((j-8)*3)%W.length;return{k:"W",g:[0,1,2].map(x=>W[(s+x)%W.length])}}
 function lesson(i){const v=lvl(i),lc=$("lc"),rd=$("rd");let got=0;show("ls");lc.innerHTML="";rd.disabled=true;
  const T=v.k==="P"?["सुनो और जानो","Listen and learn"]:v.k==="L"?["नए अक्षर सीखो","Learn new letters"]:v.k==="Y"?["अक्षर जोड़ना सीखो","Join letters to make sounds"]:["नए शब्द सीखो","Learn new words"];
@@ -302,18 +302,25 @@ function lvQ(i){const v=lvl(i),n=Math.min(2+Math.floor(i/6),4),q=[];
    else if(t===4)q.push({p:["कौन सा हिस्सा छूट गया?","Which part is missing?"],big:w[0],sub:w[3][0]+" __",say:null,o:mix(w[3][1],W.map(y=>y[3][1]),n),a:w[3][1],f:y=>y,so:0,word:w[1],en:w[1]+" = "+w[2]});
    else q.push({p:["सुनो, फिर चित्र दबाओ 👂","Listen, then tap the picture"],big:"🔊",say:w[1],o:mix(w[0],W.map(y=>y[0]),n),a:w[0],f:y=>y,so:0,word:w[1],en:w[1]+" = "+w[2]})}}
  return q}
+const IL=[["a","🐶","aso","dog"],["e","🐘","elepante","elephant"],["i","🐟","isda","fish"],["o","🐻","oso","bear"],["u","🛏️","unan","pillow"],["b","🏠","bahay","house"],["k","✋","kamay","hand"],["d","🍃","dahon","leaf"],["g","🥛","gatas","milk"],["h","🦐","hipon","shrimp"],["l","🎈","lobo","balloon"],["m","🍎","mansanas","apple"],["n","🥥","niyog","coconut"],["ng","🦷","ngipin","tooth"],["p","🐱","pusa","cat"],["r","📻","radyo","radio"],["s","🍌","saging","banana"],["t","💧","tubig","water"],["w","🧹","walis","broom"],["y","🧊","yelo","ice"]];
+const WT=[["🏠","bahay","house",["ba","hay"]],["🐟","isda","fish",["is","da"]],["🌙","buwan","moon",["bu","wan"]],["🍚","kanin","rice",["ka","nin"]],["🐱","pusa","cat",["pu","sa"]],["🐶","aso","dog",["a","so"]],["🌳","puno","tree",["pu","no"]],["☀️","araw","sun",["a","raw"]],["🥭","mangga","mango",["mang","ga"]],["🍌","saging","banana",["sa","ging"]],["⚽","bola","ball",["bo","la"]],["📖","aklat","book",["ak","lat"]],["🥛","gatas","milk",["ga","tas"]],["🎈","lobo","balloon",["lo","bo"]],["💧","tubig","water",["tu","big"]],["🧹","walis","broom",["wa","lis"]],["🛏️","unan","pillow",["u","nan"]],["✋","kamay","hand",["ka","may"]],["🍃","dahon","leaf",["da","hon"]]];
+const JKT=[["Ano ang sinabi ng zero sa eight?","What did zero say to eight?","Ang ganda ng belt mo!","Nice belt!"],["Ano ang may susi pero hindi makabukas ng pinto?","What has keys but can't open a door?","Piano! 🎹","A piano! 🎹"],["Bakit nagdala ng hagdan ang estudyante sa school?","Why did the student bring a ladder to school?","Gusto niyang mag-high school!","He wanted to go to high school!"],["Bakit magaling mag-spell ang bubuyog? 🐝","Why is the bee so good at spelling?","Kasi kampeon siya sa spelling bee!","Because he is a spelling bee champion!"],["Aling buwan ang may 28 araw?","Which month has 28 days?","Lahat ng buwan! 📅","All of them! 📅"],["Bakit mahilig ang pusa sa computer? 🐱","Why does the cat love the computer?","Kasi may mouse! 🖱️","Because it has a mouse! 🖱️"],["Bakit pumasok ang manok sa aklatan? 🐔","Why did the chicken go to the library?","Book! Book! Book!","Book! Book! Book!"],["Bakit malungkot ang libro ng Math? 📘","Why is the Math book so sad?","Kasi puno ito ng problema!","Because it is full of problems!"],["Bakit laging nakangiti ang kalendaryo?","Why is the calendar always smiling?","Kasi marami siyang date! 😄","Because it has so many dates! 😄"]];
+const TLD=[["हर दिन थोड़ा पढ़ना सीखो!","Matuto magbasa araw-araw!"],["बड़ा नंबर, ज़्यादा मुश्किल। अगला लेवल खोलने के लिए ⭐ जीतो!","Mas mataas ang numero, mas mahirap. Kumuha ng ⭐ para mabuksan ang susunod!"],["सुनो, फिर अक्षर दबाओ","Makinig, tapos pindutin ang titik"],["सुनो, फिर सही आवाज़ दबाओ","Makinig, tapos pindutin ang tamang tunog"],["सुनो, फिर चित्र दबाओ","Makinig, tapos pindutin ang larawan"],["इस अक्षर का चित्र दबाओ","Pindutin ang larawan ng titik"],["यह कौन सा शब्द है?","Anong salita ito?"],["कौन सा हिस्सा छूट गया?","Anong bahagi ang kulang?"],["हर कार्ड दबाओ और सुनो","Pindutin ang bawat card at makinig"],["अक्षर जोड़ना सीखो","Matutong pagdugtungin ang mga titik"],["नए अक्षर सीखो","Matuto ng bagong titik"],["नए शब्द सीखो","Matuto ng bagong salita"],["सुनो और जानो","Makinig at matuto"],["फिर कोशिश करो! तुम कर सकते हो।","Subukan ulit! Kaya mo ’yan."],["अच्छा! और भी अच्छा कर सकते हो।","Mahusay! Kaya mo pang higit."],["कमाल! तुम सबसे बढ़िया हो!","Perpekto! Ikaw ang pinakamagaling!"],["फिर कोशिश करो!","Subukan ulit!"],["शाबाश!","Magaling!"],["चित्र और शब्द मिलाओ","Pagtapatin ang larawan at salita"],["सही क्रम में दबाओ","Pindutin sa tamang pagkakasunod"],["सही गुब्बारा फोड़ो!","Putukin ang tamang lobo!"],["गुब्बारा फोड़ो","Pumutok ng lobo"],["बहुत बढ़िया!","Napakahusay!"],["सुनो और चुनो","Makinig at pumili"],["शब्द बनाओ","Bumuo ng salita"],["मिलाओ","Pagtapatin"],["चाल","galaw"],["फिर से शुरू करो","I-reset ang progreso"],["फिर से खेलो","Laruin ulit"],["अगला लेवल","Susunod na antas"],["सारे लेवल","Lahat ng antas"],["लेवल चुनो","Pumili ng antas"],["लेवल ","Antas "],["एक खेल चुनो!","Pumili ng laro!"],["चुटकुला टाइम!","Oras ng Biro!"],["चुटकुला!","Biro!"],["जवाब?","Sagot?"],["एक और!","Isa pa!"],["ठीक है","Sige"],["तैयार!","Handa na!"],["खेलो","Laro"],["खेल","Mga Laro"],["सुनो (listening)","Makinig (listening)"],["अक्षर (letters)","Titik (letters)"],["आवाज़ें (sounds)","Tunog (sounds)"],["शब्द (words)","Salita (words)"],["सुनो","Pakinggan"],["पढ़ो","BASA"],["बढ़ो!","TAYO!"]].sort((a,b)=>b[0].length-a[0].length);
+const ORG=new WeakMap();
+function nodes(n,f){if(!document.createTreeWalker||!n)return;const w=document.createTreeWalker(n,4);let x;while(x=w.nextNode())f(x)}
+function unloc(n){nodes(n,x=>{if(ORG.has(x)){x.nodeValue=ORG.get(x);ORG.delete(x)}})}
+function localize(n){if(LANG==="hi")return;const D=LANG==="tl"?TLD:TED;nodes(n,x=>{let s=x.nodeValue;const o=s;for(const[k,v]of D)if(s.includes(k))s=s.split(k).join(v);if(LANG==="en"){s=s.replace(/ ?\([^()]*[\u0900-\u097F][^()]*\)/g,"").replace(/ = [\u0900-\u097F\s]+/g,"");if(/^[\u0900-\u097F\s]+$/.test(s)&&s.trim()!=="हिंदी")s=""}if(s!==o){if(!ORG.has(x))ORG.set(x,o);x.nodeValue=s}})}
+if(typeof MutationObserver!=="undefined")new MutationObserver(ms=>{if(LANG==="hi")return;ms.forEach(m=>{m.addedNodes.forEach(n=>localize(n.nodeType===3?n.parentNode:n));if(m.type==="characterData")localize(m.target.parentNode)})}).observe(document.body,{childList:true,subtree:true,characterData:true});
+function setLang(l){LANG=l;try{localStorage.setItem("basa-lang",l)}catch(e){}prog=load();const en=l==="en",tl=l==="tl",lat=en||tl;
+ W=tl?WT:en?WE.concat(WE2):WH.concat(WH2);buildCur(l);SW=lat?SWE:SWH;MT=lat?SWE:MTH;CS=tl?"b k d g h l m n p r s t w y".split(" "):en?CSE:CSH;
+ ["hi","en","tl"].forEach(x=>$("l"+x).setAttribute("aria-pressed",String(x===l)));
+ document.documentElement.lang=tl?"fil":en?"en":"hi";document.title=tl?"Basa Tayo! Matutong bumasa":en?"Read Grow! Learn to read":"पढ़ो बढ़ो! पढ़ना सीखो";document.body.classList.toggle("lang-en",en);
+ document.querySelectorAll(".tile").forEach((t,i)=>t.textContent=(lat?"AEIOU":"अआइईउ")[i]);
+ unloc(document.body);localize(document.body);grid()}
+const JKE=JK.map(j=>[j[1],"",j[3],""]);
+const TED=[["चाल (moves)","moves"],["हर दिन थोड़ा पढ़ना सीखो!","Learn to read a little every day!"],["बड़ा नंबर, ज़्यादा मुश्किल। अगला लेवल खोलने के लिए ⭐ जीतो!","Higher number = harder. Earn ⭐ to unlock the next level!"],["सुनो, फिर अक्षर दबाओ","Listen, then tap the letter"],["सुनो, फिर सही आवाज़ दबाओ","Listen, then tap the right sound"],["सुनो, फिर चित्र दबाओ","Listen, then tap the picture"],["इस अक्षर का चित्र दबाओ","Tap the picture for this letter"],["यह कौन सा शब्द है?","Which word is this?"],["कौन सा हिस्सा छूट गया?","Which part is missing?"],["हर कार्ड दबाओ और सुनो","Tap every card and listen"],["अक्षर जोड़ना सीखो","Join letters to make sounds"],["नए अक्षर सीखो","Learn new letters"],["नए शब्द सीखो","Learn new words"],["सुनो और जानो","Listen and learn"],["फिर कोशिश करो! तुम कर सकते हो।","Try again! You can do it."],["अच्छा! और भी अच्छा कर सकते हो।","Good job! You can do even better."],["कमाल! तुम सबसे बढ़िया हो!","Perfect! You are the best!"],["फिर कोशिश करो!","Try again!"],["शाबाश!","Well done!"],["चित्र और शब्द मिलाओ","Match each picture with its word"],["सही क्रम में दबाओ","Tap the letters in the right order"],["सही गुब्बारा फोड़ो!","Pop the matching balloon!"],["गुब्बारा फोड़ो","Pop the Balloon"],["बहुत बढ़िया!","Great job!"],["सुनो और चुनो","Listen & Tap"],["शब्द बनाओ","Spell It"],["मिलाओ","Memory Match"],["चाल","moves"],["फिर से शुरू करो","Reset progress"],["फिर से खेलो","Play again"],["अगला लेवल","Next level"],["सारे लेवल","All levels"],["लेवल चुनो","Choose a level"],["लेवल ","Level "],["एक खेल चुनो!","Pick a game!"],["चुटकुला टाइम!","Joke Time!"],["चुटकुला!","Joke!"],["जवाब?","Answer?"],["एक और!","Another!"],["ठीक है","Close"],["तैयार!","Ready!"],["खेलो","PLAY"],["खेल","Games"],["सुनो (listening)","listening"],["अक्षर (letters)","letters"],["आवाज़ें (sounds)","sounds"],["शब्द (words)","words"],["सुनो","Listen"],["पढ़ो","READ"],["बढ़ो!","GROW!"]].sort((a,b)=>b[0].length-a[0].length);
+$("ltl").onclick=()=>setLang("tl");
 setLang(LANG);
 </script>
 </body>
 </html>
-
-
-
-
-
-
-
-
-
-
-
